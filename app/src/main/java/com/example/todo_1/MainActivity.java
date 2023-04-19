@@ -5,6 +5,7 @@ import androidx.core.view.ViewCompat;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -71,6 +72,12 @@ public class MainActivity extends AppCompatActivity {
         todo_id[i] = ViewCompat.generateViewId();
         layout.setId('t' + todo_id[i]);
 
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return false;
+            }
+        });
         layout.addView(view);
     }
 

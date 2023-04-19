@@ -7,7 +7,8 @@
     android:paddingLeft="15dp"
     android:paddingRight="15dp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:elevation="4dp">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -59,8 +60,7 @@
 
 
     <ScrollView
-
-        android:id="@+id/scrollView"
+        android:id="@+id/todo_scroll"
         android:layout_width="match_parent"
         android:layout_height="210dp"
 
