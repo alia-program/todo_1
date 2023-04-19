@@ -3,24 +3,30 @@ package com.example.todo_1;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
-import android.widget.Toolbar;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
 public class todo extends ConstraintLayout{
 
     protected static ImageButton x_button;
     ImageButton add_button;
+
     LinearLayout todoList;
+    ConstraintLayout c;
+
     View todo_item;
+
+    private OnClickListener listener;
 
     ScrollView todo_scrollView;
     Toolbar toolbar;
@@ -31,15 +37,25 @@ public class todo extends ConstraintLayout{
 
         x_button = findViewById(R.id.x_button);
         add_button = findViewById(R.id.add_button);
+
         add_button.setOnClickListener(add_listener);
         todo_scrollView = findViewById(R.id.todo_scroll);
 
         todoList = findViewById(R.id.todolist);
+        c = findViewById(R.id.layout_c);
+        toolbar = findViewById(R.id.toolbar);
 
-        //x_button.setOnClickListener(x_listener);
 
-
+        todo_scrollView.setOnTouchListener(new OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                Log.d("a","a");
+                requestDisallowInterceptTouchEvent(true);
+                return false;
+            }
+        });
     }
+
 
 
     View.OnClickListener x_listener = new OnClickListener() {
@@ -55,17 +71,13 @@ public class todo extends ConstraintLayout{
         }
     };
 
+
+
+
     private void addview(){
         todo_item = inflate(getContext(),R.layout.todo_item_row,null);
         todoList.addView(todo_item);
     }
-
-
-
-
-
-
-
 
 
     @Override
@@ -75,19 +87,11 @@ public class todo extends ConstraintLayout{
         return true;
     }
 
-    public boolean onTouch(View v, MotionEvent event) {
-        switch (event.getAction()) {
-            case MotionEvent.ACTION_DOWN:
-                //some code....
-                v.getParent().requestDisallowInterceptTouchEvent(true);
-                break;
-            case MotionEvent.ACTION_UP:
-                v.performClick();
-                break;
-            default:
-                break;
-        }
-        return true;
-    }
+
+
+
+
+
+
 
 }
