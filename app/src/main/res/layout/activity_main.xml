@@ -39,7 +39,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <com.example.todo_1.NestedScrollView
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -69,7 +69,7 @@
 
         </LinearLayout>
 
-    </com.example.todo_1.NestedScrollView>
+    </androidx.core.widget.NestedScrollView>
 
 
 

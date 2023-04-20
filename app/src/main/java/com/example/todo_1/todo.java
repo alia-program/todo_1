@@ -3,10 +3,8 @@ package com.example.todo_1;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -22,11 +20,7 @@ public class todo extends ConstraintLayout{
     ImageButton add_button;
 
     LinearLayout todoList;
-    ConstraintLayout c;
-
-    View todo_item;
-
-    private OnClickListener listener;
+    int i = 0;
 
     ScrollView todo_scrollView;
     Toolbar toolbar;
@@ -37,26 +31,40 @@ public class todo extends ConstraintLayout{
 
         x_button = findViewById(R.id.x_button);
         add_button = findViewById(R.id.add_button);
-
         add_button.setOnClickListener(add_listener);
+
         todo_scrollView = findViewById(R.id.todo_scroll);
-
         todoList = findViewById(R.id.todolist);
-        c = findViewById(R.id.layout_c);
+
+        //toolbarとScrollViewのスクロールを一時停止
         toolbar = findViewById(R.id.toolbar);
-
-
-        todo_scrollView.setOnTouchListener(new OnTouchListener() {
+        toolbar.setOnTouchListener(new View.OnTouchListener(){
             @Override
             public boolean onTouch(View v, MotionEvent event) {
-                Log.d("a","a");
-                requestDisallowInterceptTouchEvent(true);
+                requestDisallowInterceptTouchEvent(false);
                 return false;
             }
         });
+        todo_scrollView.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (i == 0){
+                    Log.d("a","null item");
+                    requestDisallowInterceptTouchEvent(false);
+                }
+                return false;
+            }
+        });
+
+
+
     }
 
-
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        requestDisallowInterceptTouchEvent(true);
+        return super.dispatchTouchEvent(ev);
+    }
 
     View.OnClickListener x_listener = new OnClickListener() {
         @Override
@@ -75,23 +83,11 @@ public class todo extends ConstraintLayout{
 
 
     private void addview(){
-        todo_item = inflate(getContext(),R.layout.todo_item_row,null);
+        Todo_item todo_item = new Todo_item(getContext(),null);
+        Log.d("a","s");
         todoList.addView(todo_item);
+        i++;
     }
-
-
-    @Override
-    public boolean performClick()
-    {
-        super.performClick();
-        return true;
-    }
-
-
-
-
-
-
 
 
 }

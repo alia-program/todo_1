@@ -3,6 +3,7 @@ package com.example.todo_1;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.view.ViewCompat;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -46,7 +47,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void addView(){
-
         EditText editText = new EditText(this);
         todo todo1 = new todo(this,null);
 
