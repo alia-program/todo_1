@@ -78,11 +78,14 @@ public class MainActivity extends AppCompatActivity {
         layout.addView(view);
     }
 
-    private void add_edit(View view){
+    private void add_edit(EditText view){
         editText_id[i] = ViewCompat.generateViewId();
+
 
         //editTextの下線を透明色に
         view.setBackgroundColor(Color.parseColor("#00000000"));
+        view.setLineSpacing(105,0);
+        view.setTextSize(22);
         view.setId('e' + todo_id[i]);
 
         layout.addView(view);
