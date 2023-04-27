@@ -62,7 +62,7 @@
         <LinearLayout
             android:id="@+id/todo_"
             android:layout_width="match_parent"
-            android:layout_height="0dp"
+            android:layout_height="40dp"
             android:orientation="vertical"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -80,8 +80,8 @@
         app:layout_constraintBottom_toBottomOf="parent" />-->
 
             <EditText
-                android:lineSpacingExtra="15dp"
-                android:includeFontPadding="false"
+                android:textSize="20dp"
+                android:lineSpacingExtra="16.5dp"
                 android:id="@+id/editText"
                 android:layout_width="match_parent"
                 android:layout_height="fill_parent"

@@ -25,13 +25,15 @@ public class Memo_line extends NestedScrollView {
     int editText_Size = 0;
     int line_Color = 0;
     Paint paint = new Paint();
+    TypedArray array;
+
 
     public Memo_line(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         //attrsがないとXmlの値取得できない
-        TypedArray array= context.obtainStyledAttributes(attrs,R.styleable.Memo_line);
+        array= context.obtainStyledAttributes(attrs,R.styleable.Memo_line);
         //edittextのマージンのせいかずれるの防止-10
-        editText_Size = array.getDimensionPixelSize(R.styleable.Memo_line_lineSize, 100)-10;
+        editText_Size = array.getDimensionPixelSize(R.styleable.Memo_line_lineSize, 100);
         line_Color = array.getColor(R.styleable.Memo_line_lineColor,Color.parseColor("#acacac"));
         Log.d("aa", String.valueOf(line_Color));
     }
@@ -39,7 +41,6 @@ public class Memo_line extends NestedScrollView {
     public Memo_line(@NonNull Context context) {
         super(context);
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
