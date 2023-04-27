@@ -1,9 +1,11 @@
 package com.example.todo_1;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.ViewCompat;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MotionEvent;
@@ -20,8 +22,8 @@ public class MainActivity extends AppCompatActivity {
     EditText editText_style;
     int i = 0;
     int x;
-    int[] todo_id = new int[10];
-    int[] EditText_id = new int[10];
+    int[] todo_id = new int[20];
+    int[] editText_id = new int[20];
 
 
     @Override
@@ -33,6 +35,7 @@ public class MainActivity extends AppCompatActivity {
         layout = findViewById(R.id.todo_);
 
         button.setOnClickListener(add_button);
+
     }
 
 
@@ -76,7 +79,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void add_edit(View view){
-        EditText_id[i] = ViewCompat.generateViewId();
+        editText_id[i] = ViewCompat.generateViewId();
+
+        //editTextの下線を透明色に
+        view.setBackgroundColor(Color.parseColor("#00000000"));
         view.setId('e' + todo_id[i]);
 
         layout.addView(view);
