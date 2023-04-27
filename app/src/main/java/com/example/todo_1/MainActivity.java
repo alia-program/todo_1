@@ -31,7 +31,7 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         button = findViewById(R.id.imageButton2);
-        editText_style = findViewById(R.id.editTextTextPersonName);
+        editText_style = findViewById(R.id.editText);
         layout = findViewById(R.id.todo_);
 
         button.setOnClickListener(add_button);

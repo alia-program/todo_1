@@ -46,11 +46,14 @@
     <com.example.todo_1.Memo_line
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
+
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+
         app:lineColor="?attr/lineColor"
         app:lineSize="40dp"
+
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -77,9 +80,12 @@
         app:layout_constraintBottom_toBottomOf="parent" />-->
 
             <EditText
-                android:id="@+id/editTextTextPersonName"
+                android:lineSpacingExtra="15dp"
+                android:includeFontPadding="false"
+                android:id="@+id/editText"
                 android:layout_width="match_parent"
-                android:layout_height="45dp" />
+                android:layout_height="fill_parent"
+                />
 
         </LinearLayout>
 
