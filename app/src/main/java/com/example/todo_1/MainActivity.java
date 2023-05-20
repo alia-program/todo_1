@@ -5,8 +5,10 @@ import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.view.ViewCompat;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.util.AttributeSet;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -20,75 +22,114 @@ public class MainActivity extends AppCompatActivity {
     ImageButton button;
     LinearLayout layout;
     EditText editText_style;
-    int i = 0;
+    int index = 0;
     int x;
-    int[] todo_id = new int[20];
-    int[] editText_id = new int[20];
+
+    todo add_Todo;
+
+    SharedPreferences index_Save;
+
+
+    int memoIndex = 0;
+    int todoIndex = 0;
+    String file_Name = memoIndex + "_"+ todoIndex + "saveTodo.json";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         button = findViewById(R.id.imageButton2);
-        editText_style = findViewById(R.id.editText);
+        //editText_style = findViewById(R.id.editText);
         layout = findViewById(R.id.todo_);
 
         button.setOnClickListener(add_button);
 
+        //ファイルの作成
+        index_Save = getSharedPreferences("todo_index" + 1, Context.MODE_PRIVATE);
+        int date = index_Save.getInt("view_index",0);
+        index = date;
+        //Log.d("ddd", String.valueOf(date));
+
+        if (index != 0){
+            for (int i = 0;i < index; i++){
+                addView(i);
+                //Log.d("dawrawer", String.valueOf(date));
+            }
+        }else {
+
+        }
+
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
 
+        //editTextの生成
+        EditText editText = new EditText(this);
+        add_edit(editText);
+
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+
+
+        //Log.d("ssssssssssss", String.valueOf(index));
+    }
 
     View.OnClickListener add_button = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            addView();
+            index++;
+            addView(index);
         }
     };
 
 
 
-    private void addView(){
-        EditText editText = new EditText(this);
-        todo todo1 = new todo(this,null);
 
+    private void addView(int i){
+        EditText editText = new EditText(this);
+        add_Todo = new todo(this,null ,"MEMO No" + 0 + "TODO No" + i);
+        //Log.d("erroraaaa", "MEMO No" + 0 + "TODO No" + i);
+        //add
+        add_edit(editText);
+        add_todo(add_Todo);
         //remove
         todo.x_button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                remove_view(todo1, editText);
+                remove_view(add_Todo, editText);
             }
         });
-
-        //add
-        add_todo(todo1);
-        add_edit(editText);
-        i++;
-
+        save();
     }
 
+    private void add_todo(todo todo_View){
+        todo_View.setId('t' + index);
 
-
-
-    private void add_todo(View view){
-        todo_id[i] = ViewCompat.generateViewId();
-        layout.setId('t' + todo_id[i]);
-
-        layout.addView(view);
+        layout.addView(todo_View);
     }
 
-    private void add_edit(EditText view){
-        editText_id[i] = ViewCompat.generateViewId();
-
+    private void add_edit(EditText editText){
 
         //editTextの下線を透明色に
-        view.setBackgroundColor(Color.parseColor("#00000000"));
-        view.setLineSpacing(105,0);
-        view.setTextSize(22);
-        view.setId('e' + todo_id[i]);
+        editText.setBackgroundColor(Color.parseColor("#00000000"));
+        editText.setLineSpacing(105,0);
+        editText.setTextSize(22);
+        editText.setId('e' + index);
 
-        layout.addView(view);
+        layout.addView(editText);
+    }
+
+    private void save(){
+        SharedPreferences.Editor editor = index_Save.edit();
+        editor.putInt("view_index",index);
+        editor.apply();
     }
 
     private void remove_view (View todo,View edit){

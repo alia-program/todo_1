@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <EditText
-        android:id="@+id/editTextTextPersonName2"
+        android:id="@+id/todo_edit"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:inputType="textPersonName"

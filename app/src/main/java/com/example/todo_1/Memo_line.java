@@ -53,7 +53,7 @@ public class Memo_line extends NestedScrollView {
         paint.setStrokeWidth(4);
 
         //行数のログ
-        Log.d("aaa", String.valueOf(fast_Count));
+        //Log.d("aaa", String.valueOf(fast_Count));
         //Scrollviewの子要素全体のサイズ取得
         for (int i = 1; i < line_Count; i++){
             canvas.drawLine(0, editText_Size*i, canvas.getWidth(),  editText_Size*i, paint);
