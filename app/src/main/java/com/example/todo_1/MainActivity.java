@@ -40,11 +40,11 @@ public class MainActivity extends AppCompatActivity {
         button = findViewById(R.id.imageButton2);
         button.setOnClickListener(add_button);
         layout = findViewById(R.id.todo_);
+
+        setView();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
+    private void setView(){
         //ファイルの作成
         index_Save = getApplicationContext().getSharedPreferences("todo_index", Context.MODE_PRIVATE);
         int date = index_Save.getInt("view_index",0);
@@ -62,6 +62,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("FileName",file_List[i].getName());
             }
         }
+    }
+    @Override
+    protected void onStart() {
+        super.onStart();
+
     }
 
     @Override

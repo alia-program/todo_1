@@ -19,6 +19,7 @@
         android:id="@+id/todo_edit"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:textColor="#000"
         android:inputType="textPersonName"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

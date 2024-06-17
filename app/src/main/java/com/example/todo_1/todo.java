@@ -109,7 +109,7 @@ public class todo extends ConstraintLayout{
         @Override
         public void onClick(View v) {
             //addview();
-            add_ItemView("aaaaaa",false,0,index);
+            add_ItemView("",false,0,index);
             Log.d("add_item", String.valueOf(index));
             Log.d("add_item", String.valueOf(index_FileName));
             index++;
@@ -119,7 +119,6 @@ public class todo extends ConstraintLayout{
 
 
 
-    //Indexの数値保存 コードの重複あり
     private void save_index(){
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("index",index);
