@@ -58,7 +58,7 @@ public class todo extends ConstraintLayout{
         todo_scrollView = findViewById(R.id.todo_scroll);
         todoList = findViewById(R.id.todolist);
         create_Files(name);
-        index_FileName=name;
+        index_FileName = name;
 
         //toolbarとScrollViewのスクロールを停止
         toolbar = findViewById(R.id.toolbar);
@@ -91,6 +91,7 @@ public class todo extends ConstraintLayout{
     View.OnClickListener x_listener = new OnClickListener() {
         @Override
         public void onClick(View v) {
+            /*
             SharedPreferences.Editor editor = preferences.edit();
             index = 0;
             editor.putInt("index",0);
@@ -100,7 +101,8 @@ public class todo extends ConstraintLayout{
                 writer.write("");
             } catch (IOException e) {
                 e.printStackTrace();
-            }
+            }*/
+
         }
     };
     View.OnClickListener add_listener = new OnClickListener() {
@@ -111,12 +113,13 @@ public class todo extends ConstraintLayout{
             Log.d("add_item", String.valueOf(index));
             Log.d("add_item", String.valueOf(index_FileName));
             index++;
+            save_Files(index);
         }
     };
 
 
 
-    //Indexの数値保存
+    //Indexの数値保存 コードの重複あり
     private void save_index(){
         SharedPreferences.Editor editor = preferences.edit();
         editor.putInt("index",index);
@@ -149,7 +152,6 @@ public class todo extends ConstraintLayout{
     //開始時のアイテムセット
     private void setItem() throws JSONException {
         jsonArray = new JSONArray(get_JsonArray());
-        //Log.d("erroraaaa", "ffffffffffffffff");
         object.put("Box",jsonArray);
         for (int i = 0; i < index; i++){
             try {
@@ -217,6 +219,7 @@ public class todo extends ConstraintLayout{
         index = preferences.getInt("index",0);
 
         json_File = new File(getContext().getFilesDir(),name);
+        Log.d("ada",name + ".json");
         //JsonFileの作成
         try {
             object = new JSONObject();
@@ -230,14 +233,14 @@ public class todo extends ConstraintLayout{
         }
     }
 
-    public void save_Files(){
+    public void save_Files(int i){
         try {
             add_JsonArray();
         } catch (JSONException e) {
             e.printStackTrace();
         }
-
-        SharedPreferences.Editor editor = preferences.edit();
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences(index_FileName, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putInt("index",index);
         editor.apply();
         Log.d(index_FileName, String.valueOf(index));
