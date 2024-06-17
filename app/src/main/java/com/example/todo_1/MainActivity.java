@@ -1,140 +1,179 @@
 package com.example.todo_1;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.core.view.ViewCompat;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
 
     ImageButton button;
     LinearLayout layout;
-    EditText editText_style;
-    int index = 0;
-    int x;
+    JSONArray kusodeka_Array = new JSONArray();
 
-    todo add_Todo;
+    int index = 0;
+    String file ="unchi.json";
 
     SharedPreferences index_Save;
-
-
-    int memoIndex = 0;
-    int todoIndex = 0;
-    String file_Name = memoIndex + "_"+ todoIndex + "saveTodo.json";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         button = findViewById(R.id.imageButton2);
-        //editText_style = findViewById(R.id.editText);
+        button.setOnClickListener(add_button);
         layout = findViewById(R.id.todo_);
 
-        button.setOnClickListener(add_button);
-
-        //ファイルの作成
-        index_Save = getSharedPreferences("todo_index" + 1, Context.MODE_PRIVATE);
-        int date = index_Save.getInt("view_index",0);
-        index = date;
-        //Log.d("ddd", String.valueOf(date));
-
-        if (index != 0){
-            for (int i = 0;i < index; i++){
-                addView(i);
-                //Log.d("dawrawer", String.valueOf(date));
-            }
-        }else {
-
-        }
-
+        setView();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        //editTextの生成
-        EditText editText = new EditText(this);
-        add_edit(editText);
-
     }
 
     @Override
     protected void onStop() {
         super.onStop();
+        String json_data = null;
+
+        while (index != 0){
+            try {
+                todo add_Todo = new todo(this,"MEMO No" + 0 + "TODO No" + index);
+                json_data += add_Todo.get_JsonArray();
+                Log.d("index保存成功", String.valueOf(index));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            index--;
+        }
 
 
-        //Log.d("ssssssssssss", String.valueOf(index));
+        //kusodeka_Array = json_data;
+
+        try {
+            //ファイル作成
+            FileOutputStream file_out = openFileOutput(file,MODE_PRIVATE);
+            //書き込み
+            OutputStreamWriter out_writer = new OutputStreamWriter(file_out);
+            BufferedWriter bw = new BufferedWriter(out_writer);
+
+            bw.write(kusodeka_Array.toString(4));
+            bw.close();
+
+            //Log.d("取得完了",getData());
+
+        } catch (IOException | JSONException e) {
+            e.printStackTrace();
+        }
     }
 
     View.OnClickListener add_button = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            index++;
-            addView(index);
+            try {
+                index++;
+                addView(index,"MEMO No" + 0 + "TODO No" + index);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     };
 
 
 
+    private void setView(){
+        //ファイルの作成
+        index_Save = getApplicationContext().getSharedPreferences("todo_index", Context.MODE_PRIVATE);
+        int date = index_Save.getInt("view_index2",0);
+        index = date;
 
-    private void addView(int i){
+        Log.d("index開始", String.valueOf(index));
+
         EditText editText = new EditText(this);
-        add_Todo = new todo(this,null ,"MEMO No" + 0 + "TODO No" + i);
-        //Log.d("erroraaaa", "MEMO No" + 0 + "TODO No" + i);
-        //add
-        add_edit(editText);
-        add_todo(add_Todo);
+        add_EditSettings(editText,0);
+
+        if (index != 0){
+            for (int i = 0;i < index; i++){
+                try {
+                    addView(i,String.valueOf(i + "aaa"));
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+                Log.d("index作成完了", String.valueOf(index));
+            }
+            Log.d("index作成終了", String.valueOf(index));
+        }
+    }
+
+    private void addView(int i,String fileName) throws JSONException {
+        EditText editText = new EditText(this);
+
+        todo add_Todo = new todo(this,null ,fileName);
+
+        add_Todo(add_Todo,i);
+        add_EditSettings(editText,i);
         //remove
-        todo.x_button.setOnClickListener(new View.OnClickListener() {
+        add_Todo.x_button.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
                 remove_view(add_Todo, editText);
+                //deleteFile(file_List[add_Todo.getId()].getName());
             }
         });
         save();
     }
 
-    private void add_todo(todo todo_View){
-        todo_View.setId('t' + index);
-
+    private void add_Todo(todo todo_View,int id){
+        todo_View.setId(id);
         layout.addView(todo_View);
     }
 
-    private void add_edit(EditText editText){
-
+    private void add_EditSettings(EditText editText,int id){
         //editTextの下線を透明色に
         editText.setBackgroundColor(Color.parseColor("#00000000"));
         editText.setLineSpacing(105,0);
         editText.setTextSize(22);
-        editText.setId('e' + index);
-
+        editText.setId(id);
         layout.addView(editText);
     }
 
     private void save(){
         SharedPreferences.Editor editor = index_Save.edit();
-        editor.putInt("view_index",index);
+        editor.putInt("view_index2",index);
         editor.apply();
     }
 
     private void remove_view (View todo,View edit){
         layout.removeView(todo);
         layout.removeView(edit);
+        index--;
+        save();
     }
 
 }
