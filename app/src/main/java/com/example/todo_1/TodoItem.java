@@ -2,8 +2,6 @@ package com.example.todo_1;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.util.Log;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -13,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-public class Todo_item extends ConstraintLayout implements CompoundButton.OnCheckedChangeListener {
+public class TodoItem extends ConstraintLayout implements CompoundButton.OnCheckedChangeListener {
 
     CheckBox checkBox;
     EditText editText;
@@ -21,7 +19,7 @@ public class Todo_item extends ConstraintLayout implements CompoundButton.OnChec
     String s;
     Boolean b;
 
-    public Todo_item(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public TodoItem(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         View.inflate(context,R.layout.todo_item_row,this);
         checkBox = findViewById(R.id.checkBox);

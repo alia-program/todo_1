@@ -14,10 +14,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
+import org.json.JSONException;
+
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,7 +28,7 @@ public class MainActivity extends AppCompatActivity {
 
     File file;
     File[] file_List;
-    ArrayList<todo> todoArrayList = new ArrayList<>();
+    ArrayList<TodoView> todoViewArrayList = new ArrayList<>();
     SharedPreferences index_Save;
 
 
@@ -53,13 +52,12 @@ public class MainActivity extends AppCompatActivity {
         EditText editText = new EditText(this);
         add_EditSettings(editText,0);
 
-        file = new File(String.valueOf(getApplicationContext().getFilesDir()));
-        file_List = file.listFiles();
+        Log.d("StartIndex", String.valueOf(index));
 
-        if (file_List.length != 0){
-            for (int i = 0;i < file_List.length; i++){
-                addView(i,file_List[i].getName());
-                Log.d("FileName",file_List[i].getName());
+        if (index != 0){
+            for (int i = 0;i < index; i++){
+                addView(i,"MEMO No" + 0 + "TODO No" + i);
+                Log.d("FileNameStart","MEMO No" + 0 + "TODO No" + i);
             }
         }
     }
@@ -72,8 +70,14 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStop() {
         super.onStop();
-        for (int i = 0;i < todoArrayList.size(); i++){
-            todoArrayList.get(i).save_Files(i);
+        for (int i = 0; i < todoViewArrayList.size(); i++){
+            try {
+                todoViewArrayList.get(i).save_JsonArray();
+            } catch (JSONException e) {
+                throw new RuntimeException(e);
+            }
+            Log.d("保存が成功しました", String.valueOf(todoViewArrayList.get(i).getId()));
+
         }
     }
 
@@ -91,23 +95,24 @@ public class MainActivity extends AppCompatActivity {
     private void addView(int i,String fileName){
         EditText editText = new EditText(this);
 
-        todo add_Todo = new todo(this,null ,fileName);
-        todoArrayList.add(add_Todo);
+        TodoView add_TodoView = new TodoView(this,null ,fileName);
+        todoViewArrayList.add(add_TodoView);
 
-        add_Todo(add_Todo,i);
+        add_Todo(add_TodoView,i);
         add_EditSettings(editText,i);
         //remove
-        add_Todo.x_button.setOnClickListener(new View.OnClickListener() {
+        add_TodoView.x_button.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-                remove_view(add_Todo, editText);
+                remove_view(add_TodoView, editText);
+                todoViewArrayList.remove(index);
 
-                for (int i = 0;i < todoArrayList.size(); i++){
-                    todoArrayList.get(i).save_Files(i);
+                for (int i = 0; i < todoViewArrayList.size(); i++){
+                    todoViewArrayList.get(i).save_index();
                 }
-                for (int i = add_Todo.getId();i < todoArrayList.size();i++){
-                    todoArrayList.get(i).setId(i);
+                for (int i = add_TodoView.getId(); i < todoViewArrayList.size(); i++){
+                    todoViewArrayList.get(i).setId(i);
                     Log.d("FileName1", String.valueOf(i));
                 }
 
@@ -117,9 +122,9 @@ public class MainActivity extends AppCompatActivity {
         save();
     }
 
-    private void add_Todo(todo todo_View,int id){
-        todo_View.setId(id);
-        layout.addView(todo_View);
+    private void add_Todo(TodoView todoView_View, int id){
+        todoView_View.setId(id);
+        layout.addView(todoView_View);
     }
 
     private void add_EditSettings(EditText editText,int id){
