@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.constraintlayout.widget.ConstraintLayout;
 
-public class TodoItem extends ConstraintLayout implements CompoundButton.OnCheckedChangeListener {
+public class TodoViewItem extends ConstraintLayout implements CompoundButton.OnCheckedChangeListener {
 
     CheckBox checkBox;
     EditText editText;
@@ -19,7 +19,7 @@ public class TodoItem extends ConstraintLayout implements CompoundButton.OnCheck
     String s;
     Boolean b;
 
-    public TodoItem(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public TodoViewItem(@NonNull Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
         View.inflate(context,R.layout.todo_item_row,this);
         checkBox = findViewById(R.id.checkBox);

@@ -42,41 +42,17 @@ public class MainActivity extends AppCompatActivity {
 
         setView();
     }
-
-    private void setView(){
-        //ファイルの作成
-        index_Save = getApplicationContext().getSharedPreferences("todo_index", Context.MODE_PRIVATE);
-        int date = index_Save.getInt("view_index",0);
-        index = date;
-
-        EditText editText = new EditText(this);
-        add_EditSettings(editText,0);
-
-        Log.d("StartIndex", String.valueOf(index));
-
-        if (index != 0){
-            for (int i = 0;i < index; i++){
-                addView(i,"MEMO No" + 0 + "TODO No" + i);
-                Log.d("FileNameStart","MEMO No" + 0 + "TODO No" + i);
-            }
-        }
-    }
-    @Override
-    protected void onStart() {
-        super.onStart();
-
-    }
-
     @Override
     protected void onStop() {
         super.onStop();
         for (int i = 0; i < todoViewArrayList.size(); i++){
             try {
+                Log.d("保存中id", String.valueOf(todoViewArrayList.get(i).getId()));
                 todoViewArrayList.get(i).save_JsonArray();
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-            Log.d("保存が成功しました", String.valueOf(todoViewArrayList.get(i).getId()));
+            Log.d("保存が成功しましたid", String.valueOf(todoViewArrayList.get(i).getId()));
 
         }
     }
@@ -86,20 +62,39 @@ public class MainActivity extends AppCompatActivity {
         public void onClick(View view) {
             index++;
             addView(index,"MEMO No" + 0 + "TODO No" + index);
+            Log.d("uuuuuu", String.valueOf(index));
         }
     };
 
 
+    private void setView(){
+        //ファイルの作成・数値の入力
+        index_Save = getApplicationContext().getSharedPreferences("todo_index", Context.MODE_PRIVATE);
+        int date = index_Save.getInt("view_index",0);
+        index = date;
+        Log.d("StartIndex", String.valueOf(index));
 
+        //最初のEditText
+        EditText editText = new EditText(this);
+        add_EditSettings(editText,0);
+
+        if (index != 0){
+            for (int i = 0;i < index; i++){
+                addView(i,"MEMO No" + 0 + "TODO No" + i);
+                Log.d("Todo id","MEMO No" + 0 + "TODO No" + i);
+            }
+        }
+    }
 
     private void addView(int i,String fileName){
-        EditText editText = new EditText(this);
 
         TodoView add_TodoView = new TodoView(this,null ,fileName);
+        add_TodoSettings(add_TodoView,i);
         todoViewArrayList.add(add_TodoView);
 
-        add_Todo(add_TodoView,i);
+        EditText editText = new EditText(this);
         add_EditSettings(editText,i);
+
         //remove
         add_TodoView.x_button.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.O)
@@ -122,7 +117,7 @@ public class MainActivity extends AppCompatActivity {
         save();
     }
 
-    private void add_Todo(TodoView todoView_View, int id){
+    private void add_TodoSettings(TodoView todoView_View, int id){
         todoView_View.setId(id);
         layout.addView(todoView_View);
     }
@@ -140,6 +135,7 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences.Editor editor = index_Save.edit();
         editor.putInt("view_index",index);
         editor.apply();
+        Log.d("index保存成功", String.valueOf(index_Save.getInt("view_index",0)));
     }
 
     private void remove_view (View todo,View edit){

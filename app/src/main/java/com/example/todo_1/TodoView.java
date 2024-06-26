@@ -35,7 +35,7 @@ public class TodoView extends ConstraintLayout{
     LinearLayout todoList;
     ScrollView todo_scrollView;
     Toolbar toolbar;
-    TodoItem todoItem;
+    TodoViewItem todoViewItem;
 
     String index_FileName;
     File json_File;
@@ -47,13 +47,13 @@ public class TodoView extends ConstraintLayout{
     public TodoView(@NonNull Context context, @Nullable AttributeSet attrs , String name) {
         super(context, attrs);
         View.inflate(context,R.layout.todo_style,this);
-        x_button = findViewById(R.id.x_button);
+        x_button = findViewById(com.example.todo_1.R.id.x_button);
         add_button = findViewById(R.id.add_button);
         add_button.setOnClickListener(add_listener);
         todo_scrollView = findViewById(R.id.todo_scroll);
         todoList = findViewById(R.id.todolist);
-        create_Files(name);
         index_FileName = name;
+        create_Files();
         //toolbarとScrollViewのスクロールを停止
         toolbar = findViewById(R.id.toolbar);
         toolbar.setOnTouchListener(new View.OnTouchListener(){
@@ -73,69 +73,54 @@ public class TodoView extends ConstraintLayout{
             }
         });
     }
-
     //触っても動かないように
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
         requestDisallowInterceptTouchEvent(true);
         return super.dispatchTouchEvent(ev);
     }
-
     View.OnClickListener add_listener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            add_ItemView("",false,index);
+            add_TodoViewItem("",false,index);
             Log.d("add_item", String.valueOf(index));
-            index++;
-            /*
             try {
-                save_JsonArray();
+                //アイテムを配列に入れる
+                jsonArray.put(add_json("",false));
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-
-             */
-
+            index++;
         }
     };
 
 
 
-    //開始時のアイテムセット
-    private void setItem() throws JSONException {
-        jsonArray = new JSONArray(get_JsonArray());
-        for (int i = 0; i < index; i++){
-            try {
-                //番号のインスタンスから保存した内容の取得
-                JSONObject json_item = jsonArray.getJSONObject(i);
-                String string = json_item.getString("EditText");
-                Boolean bool = json_item.getBoolean("checkBox");
-                add_ItemView(string ,bool,index);
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
+    //TodoViewItemの生成
+    private void add_TodoViewItem(String content,Boolean checkBox,int id){
+        //itemのインスタンスを作成して追加
+        todoViewItem = new TodoViewItem(getContext(),null);
+        //itemを表示・設定
+        todoList.addView(todoViewItem);
+        todoViewItem.setEditText(content);
+        todoViewItem.setCheckBox(checkBox);
+        todoViewItem.setId(id);
+        Log.d("vvvvvvvvvvvv", String.valueOf(todoViewItem.getId()));
     }
 
-    //TodoItemの生成
-    private void add_ItemView(String content,Boolean checkBox,int id){
-        //itemのインスタンスを作成して追加
-        todoItem = new TodoItem(getContext(),null);
-        //itemを表示・設定
-        todoList.addView(todoItem);
-        todoItem.setEditText(content);
-        todoItem.setCheckBox(checkBox);
-        todoItem.setId(id);
+    private JSONObject add_json(String string,Boolean bool) throws JSONException {
+        JSONObject jsonObject = new JSONObject();
+        jsonObject.put("EditText",string);
+        jsonObject.put("checkBox",bool);
+        return jsonObject;
     }
 
     //ファイルの作成
-    private void create_Files(String name){
-        //indexFileの作成
-        preferences = getContext().getSharedPreferences(name, Context.MODE_PRIVATE);
-        index = preferences.getInt("index",0);
+    private void create_Files(){
+        index = get_Index();
 
-        json_File = new File(getContext().getFilesDir(),name);
-        Log.d("ada",name + ".json");
+        json_File = new File(getContext().getFilesDir(),index_FileName);
+        //Log.d("ada",index_FileName + ".json");
         //JsonFileの作成
         try {
             if (index == 0){
@@ -148,6 +133,24 @@ public class TodoView extends ConstraintLayout{
         }
     }
 
+    //開始時のアイテムセット
+    private void setItem() throws JSONException {
+        jsonArray = new JSONArray(get_JsonArray());
+        for (int i = 0; i < index; i++){
+            //Log.d("aaaaaaaaaaaaa","あいてむ1");
+            try {
+                //番号のインスタンスから保存した内容の取得
+                JSONObject json_item = jsonArray.getJSONObject(i);
+                String string = json_item.getString("EditText");
+                Boolean bool = json_item.getBoolean("checkBox");
+                add_TodoViewItem(string ,bool,index);
+                //Log.d("aaaaaaaaaaaaa","あいてむ");
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public void save_index(){
         SharedPreferences sharedPreferences = getContext().getSharedPreferences(index_FileName, Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sharedPreferences.edit();
@@ -157,16 +160,15 @@ public class TodoView extends ConstraintLayout{
     }
 
     public void save_JsonArray() throws JSONException {
-        if (jsonArray.length() >= 0 && index >= 0){//JsonFileが保存できていない場合、indexとjsonArrayの数が一致しないためエラー
+        //indexの保存
+        save_index();
 
-            for (int i = 0; i < index ; i++){
-                //アイテムを格納
-                JSONObject j_Item = new JSONObject();
-                TodoItem ed= todoList.findViewById(i);
-                j_Item.put("EditText",ed.getEditText());
-                j_Item.put("checkBox",ed.getCheckBox());
-                //アイテムを配列に入れる
-                jsonArray.put(i,j_Item);
+        if (jsonArray.length() >= 0 && get_Index() >= 0){//JsonFileが保存できていない場合、indexとjsonArrayの数が一致しないためエラー
+            Log.d("回数", String.valueOf(get_Index()));
+            for (int i = 0; i < get_Index() ; i++){
+                TodoViewItem ed= todoList.findViewById(i);
+                jsonArray.put(i,add_json(ed.getEditText(),ed.getCheckBox()));
+                Log.d("add_item", String.valueOf(get_Index()));
             }
             //Fileにjson形式を保存
             try (FileWriter writer = new FileWriter(json_File)) {
@@ -174,14 +176,19 @@ public class TodoView extends ConstraintLayout{
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            //indexの保存
-            save_index();
 
         }else {
             Toast.makeText(getContext() , "ファイルの欠損により保存に失敗しました。", Toast.LENGTH_LONG).show();
             Log.d("error","Jsonファイルが破損しました");
         }
 
+    }
+
+    public int get_Index(){
+        SharedPreferences pre = getContext().getSharedPreferences(index_FileName, Context.MODE_PRIVATE);
+        int todo_in = pre.getInt("index",0);
+        Log.d("数値を取得しました", String.valueOf(index));
+        return todo_in;
     }
 
     //保存したJsonファイルを取り出す
@@ -197,4 +204,5 @@ public class TodoView extends ConstraintLayout{
         }
         return json_string;
     }
+
 }
