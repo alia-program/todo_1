@@ -42,7 +42,7 @@ public class TodoView extends ConstraintLayout{
     public JSONArray jsonArray;
 
     SharedPreferences preferences;
-    int index = 1;
+    int index = 0;
 
     public TodoView(@NonNull Context context, @Nullable AttributeSet attrs , String name) {
         super(context, attrs);
@@ -120,7 +120,7 @@ public class TodoView extends ConstraintLayout{
         index = get_Index();
 
         json_File = new File(getContext().getFilesDir(),index_FileName);
-        //Log.d("ada",index_FileName + ".json");
+        Log.d("ファイル名",index_FileName + ".json");
         //JsonFileの作成
         try {
             if (index == 0){
@@ -143,7 +143,7 @@ public class TodoView extends ConstraintLayout{
                 JSONObject json_item = jsonArray.getJSONObject(i);
                 String string = json_item.getString("EditText");
                 Boolean bool = json_item.getBoolean("checkBox");
-                add_TodoViewItem(string ,bool,index);
+                add_TodoViewItem(string ,bool,i);
                 //Log.d("aaaaaaaaaaaaa","あいてむ");
             } catch (JSONException e) {
                 e.printStackTrace();
@@ -166,9 +166,10 @@ public class TodoView extends ConstraintLayout{
         if (jsonArray.length() >= 0 && get_Index() >= 0){//JsonFileが保存できていない場合、indexとjsonArrayの数が一致しないためエラー
             Log.d("回数", String.valueOf(get_Index()));
             for (int i = 0; i < get_Index() ; i++){
+                Log.d("add_item", String.valueOf(i));
                 TodoViewItem ed= todoList.findViewById(i);
                 jsonArray.put(i,add_json(ed.getEditText(),ed.getCheckBox()));
-                Log.d("add_item", String.valueOf(get_Index()));
+                Log.d("成功あｄｄ", String.valueOf(get_Index()));
             }
             //Fileにjson形式を保存
             try (FileWriter writer = new FileWriter(json_File)) {
@@ -187,7 +188,7 @@ public class TodoView extends ConstraintLayout{
     public int get_Index(){
         SharedPreferences pre = getContext().getSharedPreferences(index_FileName, Context.MODE_PRIVATE);
         int todo_in = pre.getInt("index",0);
-        Log.d("数値を取得しました", String.valueOf(index));
+        //Log.d("数値を取得しました", String.valueOf(index));
         return todo_in;
     }
 
