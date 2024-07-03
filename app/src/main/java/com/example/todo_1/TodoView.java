@@ -44,10 +44,41 @@ public class TodoView extends ConstraintLayout{
     SharedPreferences preferences;
     int index = 0;
 
+    public TodoView(@NonNull Context context, @Nullable AttributeSet attrs) {
+        super(context, attrs);
+        View.inflate(context,R.layout.todo_style,this);
+        x_button = findViewById(com.example.todo_1.R.id.x_button);
+        //x_button.setOnClickListener(x_listener);
+        add_button = findViewById(R.id.add_button);
+        add_button.setOnClickListener(add_listener);
+        todo_scrollView = findViewById(R.id.todo_scroll);
+        todoList = findViewById(R.id.todolist);
+        //toolbarとScrollViewのスクロールを停止
+        toolbar = findViewById(R.id.toolbar);
+        toolbar.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                requestDisallowInterceptTouchEvent(false);
+                return false;
+            }
+        });
+        todo_scrollView.setOnTouchListener(new View.OnTouchListener(){
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                if (index == 0){
+                    requestDisallowInterceptTouchEvent(false);
+                }
+                return false;
+            }
+        });
+    }
+
+
     public TodoView(@NonNull Context context, @Nullable AttributeSet attrs , String name) {
         super(context, attrs);
         View.inflate(context,R.layout.todo_style,this);
         x_button = findViewById(com.example.todo_1.R.id.x_button);
+        //x_button.setOnClickListener(x_listener);
         add_button = findViewById(R.id.add_button);
         add_button.setOnClickListener(add_listener);
         todo_scrollView = findViewById(R.id.todo_scroll);
@@ -204,6 +235,12 @@ public class TodoView extends ConstraintLayout{
             e.printStackTrace();
         }
         return json_string;
+    }
+
+    public void deleteDate(){
+        json_File.delete();
+        SharedPreferences deletePre = getContext().getSharedPreferences(index_FileName, Context.MODE_PRIVATE);
+        deletePre.edit().remove("index").commit();
     }
 
 }

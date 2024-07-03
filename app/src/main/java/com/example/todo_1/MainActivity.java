@@ -9,6 +9,7 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.ContextThemeWrapper;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -49,9 +50,9 @@ public class MainActivity extends AppCompatActivity {
         int date = index_Save.getInt("view_index",0);
         index = date;
 
-        EditText editText = new EditText(this);
-        add_EditSettings(editText,0);
-
+        Cos_EditText cosEditText = new Cos_EditText(this,null);
+        cosEditText.setId(0);
+        layout.addView(cosEditText);
         Log.d("数値を取得しました", String.valueOf(index));
 
         if (index != 0){
@@ -89,13 +90,14 @@ public class MainActivity extends AppCompatActivity {
 
 
     private void addView(int i,String fileName){
-        EditText editText = new EditText(this);
-
         TodoView add_TodoView = new TodoView(this,null ,fileName);
         todoViewArrayList.add(add_TodoView);
+        add_TodoView.setId(i);
+        layout.addView(add_TodoView);
 
-        add_Todo(add_TodoView,i);
-        add_EditSettings(editText,i);
+        Cos_EditText cosEditText = new Cos_EditText(this,null);
+        cosEditText.setId(i);
+        layout.addView(cosEditText);
 
         Log.d("ファイルが追加されました", String.valueOf(i));
         //remove
@@ -103,9 +105,9 @@ public class MainActivity extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-                remove_view(add_TodoView, editText);
+                add_TodoView.deleteDate();
+                remove_view(add_TodoView, cosEditText);
                 todoViewArrayList.remove(index);
-
                 for (int i = 0; i < todoViewArrayList.size(); i++){
                     todoViewArrayList.get(i).save_index();
                 }
@@ -118,20 +120,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         save();
-    }
-
-    private void add_Todo(TodoView todoView_View, int id){
-        todoView_View.setId(id);
-        layout.addView(todoView_View);
-    }
-
-    private void add_EditSettings(EditText editText,int id){
-        //editTextの下線を透明色に
-        editText.setBackgroundColor(Color.parseColor("#00000000"));
-        editText.setLineSpacing(105,0);
-        editText.setTextSize(22);
-        editText.setId(id);
-        layout.addView(editText);
     }
 
     private void save(){
