@@ -2,6 +2,7 @@ package com.example.todo_1;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.DialogFragment;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -57,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (index != 0){
             for (int i = 0;i < index; i++){
-                addView(i,"MEMO No" + 0 + "TODO No" + i);
+                addTodoView(i,"MEMO No" + 0 + "TODO No" + i);
                 Log.d("FileNameStart","MEMO No" + 0 + "TODO No" + i);
             }
         }
@@ -80,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
     View.OnClickListener add_button = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            addView(index,"MEMO No" + 0 + "TODO No" + index);
+            addTodoView(index,"MEMO No" + 0 + "TODO No" + index);
             index++;
             save();
         }
@@ -88,12 +89,13 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-
-    private void addView(int i,String fileName){
-        TodoView add_TodoView = new TodoView(this,null ,fileName);
+    private void addTodoView(int i,String fileName){
+        TodoView add_TodoView = new TodoView(this,null ,fileName,getSupportFragmentManager());
         todoViewArrayList.add(add_TodoView);
         add_TodoView.setId(i);
         layout.addView(add_TodoView);
+
+
 
         Cos_EditText cosEditText = new Cos_EditText(this,null);
         cosEditText.setId(i);
@@ -105,12 +107,9 @@ public class MainActivity extends AppCompatActivity {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-                add_TodoView.deleteDate();
+                add_TodoView.deleteDate(fileName);
                 remove_view(add_TodoView, cosEditText);
                 todoViewArrayList.remove(index);
-                for (int i = 0; i < todoViewArrayList.size(); i++){
-                    todoViewArrayList.get(i).save_index();
-                }
                 for (int i = add_TodoView.getId(); i < todoViewArrayList.size(); i++){
                     todoViewArrayList.get(i).setId(i);
                     Log.d("FileName1", String.valueOf(i));
@@ -134,5 +133,7 @@ public class MainActivity extends AppCompatActivity {
         index--;
         save();
     }
+
+
 
 }

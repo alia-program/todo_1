@@ -1,13 +1,14 @@
 package com.example.todo_1;
 
 import android.content.Context;
-import android.content.SharedPreferences;
+import android.content.DialogInterface;
+import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ImageButton;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.Toast;
 
@@ -15,6 +16,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -26,25 +30,28 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class TodoView extends ConstraintLayout{
+public class TodoView extends ConstraintLayout implements Cos_Dialog.DialogListener {
 
     ImageButton x_button;
     ImageButton add_button;
 
-    LinearLayout todoList;
     ScrollView todo_scrollView;
     Toolbar toolbar;
-    TodoViewItem todoViewItem;
+    TodoViewItem todoList;
 
-    String index_FileName;
+    String fileName;
     File json_File;
     public JSONArray jsonArray;
+    List<TodoData> dataArray = new ArrayList<>();
+    int index;
+    TodoViewItem todoViewItem;
+    int listenerPosition;
 
-    SharedPreferences preferences;
-    int index = 0;
 
-    public TodoView(@NonNull Context context, @Nullable AttributeSet attrs) {
+    public TodoView(@NonNull Context context, @Nullable AttributeSet attrs , String name, FragmentManager fragmentManager) {
         super(context, attrs);
         View.inflate(context,R.layout.todo_style,this);
         x_button = findViewById(com.example.todo_1.R.id.x_button);
@@ -52,39 +59,28 @@ public class TodoView extends ConstraintLayout{
         add_button = findViewById(R.id.add_button);
         add_button.setOnClickListener(add_listener);
         todo_scrollView = findViewById(R.id.todo_scroll);
-        todoList = findViewById(R.id.todolist);
-        //toolbarとScrollViewのスクロールを停止
-        toolbar = findViewById(R.id.toolbar);
-        toolbar.setOnTouchListener(new View.OnTouchListener(){
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                requestDisallowInterceptTouchEvent(false);
-                return false;
-            }
-        });
-        todo_scrollView.setOnTouchListener(new View.OnTouchListener(){
-            @Override
-            public boolean onTouch(View v, MotionEvent event) {
-                if (index == 0){
-                    requestDisallowInterceptTouchEvent(false);
-                }
-                return false;
-            }
-        });
-    }
+        fileName = name;
+        RecyclerView recyclerView = findViewById(R.id.todolist);
 
-
-    public TodoView(@NonNull Context context, @Nullable AttributeSet attrs , String name) {
-        super(context, attrs);
-        View.inflate(context,R.layout.todo_style,this);
-        x_button = findViewById(com.example.todo_1.R.id.x_button);
-        //x_button.setOnClickListener(x_listener);
-        add_button = findViewById(R.id.add_button);
-        add_button.setOnClickListener(add_listener);
-        todo_scrollView = findViewById(R.id.todo_scroll);
-        todoList = findViewById(R.id.todolist);
-        index_FileName = name;
         create_Files();
+
+        //viewの管理（追加・削除など）(仮定)
+        recyclerView.setHasFixedSize(true);
+        RecyclerView.LayoutManager manager = new LinearLayoutManager(context);
+        recyclerView.setLayoutManager(manager);
+        todoViewItem = new TodoViewItem(dataArray,fragmentManager);
+        recyclerView.setAdapter(todoViewItem);
+        todoViewItem.notifyDataSetChanged();
+
+        //引数が必要なため、変数としてインターフェースをインスタンス化して渡す→呼び出されたときメソッドの内容を定義するためメソッドが出現する
+        todoViewItem.setOnItemLongClickListener(new TodoViewItem.OnItemLongClickListener() {
+            @Override
+            public void onItemLongClickListener(View view, int position) {
+                listenerPosition = position;
+                show_Dialog(position,fragmentManager);
+            }
+        });
+
         //toolbarとScrollViewのスクロールを停止
         toolbar = findViewById(R.id.toolbar);
         toolbar.setOnTouchListener(new View.OnTouchListener(){
@@ -103,41 +99,48 @@ public class TodoView extends ConstraintLayout{
                 return false;
             }
         });
-    }
-    //触っても動かないように
-    @Override
-    public boolean dispatchTouchEvent(MotionEvent ev) {
-        requestDisallowInterceptTouchEvent(true);
-        return super.dispatchTouchEvent(ev);
     }
     View.OnClickListener add_listener = new OnClickListener() {
         @Override
         public void onClick(View v) {
-            add_TodoViewItem("",false,index);
-            Log.d("add_item", String.valueOf(index));
+            TodoData todoData = new TodoData("",false);
+            dataArray.add(todoData);
+            todoViewItem.notifyDataSetChanged();
             try {
                 //アイテムを配列に入れる
                 jsonArray.put(add_json("",false));
+                Log.d("add_item", String.valueOf(index));
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
             index++;
         }
     };
+    private OnClickListener listener;
+    //触っても動かないように
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        requestDisallowInterceptTouchEvent(true);
 
+        if (ev.getAction() == MotionEvent.ACTION_UP) {
+            if (listener != null) listener.onClick(this);
+        }
 
-
-    //TodoViewItemの生成
-    private void add_TodoViewItem(String content,Boolean checkBox,int id){
-        //itemのインスタンスを作成して追加
-        todoViewItem = new TodoViewItem(getContext(),null);
-        //itemを表示・設定
-        todoList.addView(todoViewItem);
-        todoViewItem.setEditText(content);
-        todoViewItem.setCheckBox(checkBox);
-        todoViewItem.setId(id);
-        Log.d("vvvvvvvvvvvv", String.valueOf(todoViewItem.getId()));
+        return super.dispatchTouchEvent(ev);
     }
+    @Override
+    public boolean dispatchKeyEvent(KeyEvent event) {
+        if (event.getAction() == KeyEvent.ACTION_UP && (event.getKeyCode() == KeyEvent.KEYCODE_DPAD_CENTER || event.getKeyCode() == KeyEvent.KEYCODE_ENTER)) {
+            if (listener != null) listener.onClick(this);
+        }
+        return super.dispatchKeyEvent(event);
+    }
+    public void setOnClickListener(OnClickListener listener) {
+        this.listener = listener;
+    }
+
+
+
 
     private JSONObject add_json(String string,Boolean bool) throws JSONException {
         JSONObject jsonObject = new JSONObject();
@@ -148,59 +151,44 @@ public class TodoView extends ConstraintLayout{
 
     //ファイルの作成
     private void create_Files(){
-        index = get_Index();
-
-        json_File = new File(getContext().getFilesDir(),index_FileName);
-        Log.d("ファイル名",index_FileName + ".json");
-        //JsonFileの作成
         try {
-            if (index == 0){
-                jsonArray = new JSONArray();
+            json_File = new File(getContext().getFilesDir(),fileName);
+            Log.d("ファイル名",fileName + ".json");
+
+            if (json_File.exists()){
+                jsonArray = new JSONArray(get_JsonArray());
+                index = jsonArray.length();
+                Log.d("ファイル数", String.valueOf(jsonArray.length()));
+                for (int i = 0; i < index; i++){
+                    try {
+                        //番号のインスタンスから保存した内容の取得
+                        JSONObject json_item = jsonArray.getJSONObject(i);
+                        String string = json_item.getString("EditText");
+                        Boolean bool = json_item.getBoolean("checkBox");
+
+                        TodoData todoData = new TodoData(string,bool);
+                        dataArray.add(todoData);
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
             }else {
-                setItem();
+                jsonArray = new JSONArray();
+                Log.d("newFile","新しくファイルが作成されます");
             }
         } catch (JSONException e) {
             e.printStackTrace();
         }
-    }
 
-    //開始時のアイテムセット
-    private void setItem() throws JSONException {
-        jsonArray = new JSONArray(get_JsonArray());
-        for (int i = 0; i < index; i++){
-            //Log.d("aaaaaaaaaaaaa","あいてむ1");
-            try {
-                //番号のインスタンスから保存した内容の取得
-                JSONObject json_item = jsonArray.getJSONObject(i);
-                String string = json_item.getString("EditText");
-                Boolean bool = json_item.getBoolean("checkBox");
-                add_TodoViewItem(string ,bool,i);
-                //Log.d("aaaaaaaaaaaaa","あいてむ");
-            } catch (JSONException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void save_index(){
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences(index_FileName, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
-        editor.putInt("index",index);
-        editor.apply();
-        Log.d(index_FileName, String.valueOf(index));
     }
 
     public void save_JsonArray() throws JSONException {
-        //indexの保存
-        save_index();
+        if (jsonArray.length() >= 0 && index >= 0){//JsonFileが保存できていない場合、indexとjsonArrayの数が一致しないためエラー
 
-        if (jsonArray.length() >= 0 && get_Index() >= 0){//JsonFileが保存できていない場合、indexとjsonArrayの数が一致しないためエラー
-            Log.d("回数", String.valueOf(get_Index()));
-            for (int i = 0; i < get_Index() ; i++){
-                Log.d("add_item", String.valueOf(i));
-                TodoViewItem ed= todoList.findViewById(i);
-                jsonArray.put(i,add_json(ed.getEditText(),ed.getCheckBox()));
-                Log.d("成功あｄｄ", String.valueOf(get_Index()));
+            //入力されたデータの取得
+            for (int i = 0; i < index ; i++){
+                jsonArray.put(i,add_json(dataArray.get(i).getText(),dataArray.get(i).getboolean()));
+                Log.d("Content",jsonArray.getString(i));
             }
             //Fileにjson形式を保存
             try (FileWriter writer = new FileWriter(json_File)) {
@@ -214,13 +202,6 @@ public class TodoView extends ConstraintLayout{
             Log.d("error","Jsonファイルが破損しました");
         }
 
-    }
-
-    public int get_Index(){
-        SharedPreferences pre = getContext().getSharedPreferences(index_FileName, Context.MODE_PRIVATE);
-        int todo_in = pre.getInt("index",0);
-        //Log.d("数値を取得しました", String.valueOf(index));
-        return todo_in;
     }
 
     //保存したJsonファイルを取り出す
@@ -237,10 +218,41 @@ public class TodoView extends ConstraintLayout{
         return json_string;
     }
 
-    public void deleteDate(){
-        json_File.delete();
-        SharedPreferences deletePre = getContext().getSharedPreferences(index_FileName, Context.MODE_PRIVATE);
-        deletePre.edit().remove("index").commit();
+    public void deleteDate(String deleteFileName){
+        File deleteFile = new File(getContext().getFilesDir(),deleteFileName);
+        deleteFile.delete();
+        Log.d("削除に成功しました", deleteFileName);
     }
 
+    public void deleteItem(int id){
+        dataArray.remove(id);
+        todoViewItem.notifyDataSetChanged();
+        jsonArray.remove(id);
+        index--;
+    }
+
+    public void show_Dialog(int position,FragmentManager fragmentManager){
+        Cos_Dialog dialogFragment = new Cos_Dialog();
+        Bundle args = new Bundle();
+        args.putString("CONTENT", "このアイテムを削除しますか？");
+        args.putString("POSITIVE", "削除");
+        args.putString("NEGATIVE", "キャンセル界隈");
+        dialogFragment.setArguments(args);
+        dialogFragment.setDialogListener(this);
+        dialogFragment.setCancelable(false);
+
+        dialogFragment.show(fragmentManager, "my_dialog");
+    }
+
+    @Override
+    public DialogInterface.OnClickListener onPositiveListener() {
+        deleteItem(listenerPosition);
+        Log.d("add_item","削除されました");
+        return null;
+    }
+
+    @Override
+    public DialogInterface.OnClickListener onNegativeListener() {
+        return null;
+    }
 }

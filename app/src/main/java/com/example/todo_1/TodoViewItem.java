@@ -1,63 +1,142 @@
 package com.example.todo_1;
 
-import android.content.Context;
-import android.util.AttributeSet;
+import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.DialogFragment;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.RecyclerView;
 
-public class TodoViewItem extends ConstraintLayout implements CompoundButton.OnCheckedChangeListener {
+import java.util.ArrayList;
+import java.util.List;
 
-    CheckBox checkBox;
-    EditText editText;
+public class TodoViewItem extends RecyclerView.Adapter<TodoViewItem.TodoHolder> {
 
-    String s;
-    Boolean b;
+    private final List<TodoData> dataArray;
+    private final FragmentManager fm;
+    boolean checked = false;
+    private OnItemLongClickListener listener;
 
-    public TodoViewItem(@NonNull Context context, @Nullable AttributeSet attrs) {
-        super(context, attrs);
-        View.inflate(context,R.layout.todo_item_row,this);
-        checkBox = findViewById(R.id.checkBox);
-        editText = findViewById(R.id.todo_edit);
-
-        checkBox.setOnCheckedChangeListener(this);
+    //呼び出されたときにListを設定してもらう
+    public TodoViewItem(List<TodoData> list,FragmentManager fragmentManager) {
+        this.dataArray = list;
+        this.fm = fragmentManager;
     }
 
-    public String getEditText() {
-        s = String.valueOf(editText.getText());
-        return s;
-    }
-
-    public void setEditText(String string) {
-        editText.setText(string);
-    }
-
-
-    public Boolean getCheckBox() {
-        b = checkBox.isChecked();
-        return b;
-    }
-
-    public void setCheckBox(Boolean bool) {
-        checkBox.setChecked(bool);
-    }
-
-
-    public Object get_item(){
-     Object[] o = {getCheckBox(),getEditText()};
-        return o;
-    }
-
+    //Start
+    @NonNull
     @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        //Log.d("sas", String.valueOf(getEditText()));
-        //Log.d("sab", String.valueOf(getCheckBox()));
+    public TodoHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        //itemのxml
+        View inflate = LayoutInflater.from(parent.getContext()).inflate(R.layout.todo_item_row, parent, false);
+        return new TodoHolder(inflate,fm);
     }
+
+    //Viewの更新とデータとの紐づけ
+    @Override
+    public void onBindViewHolder(@NonNull TodoHolder holder, @SuppressLint("RecyclerView") int position) {
+        //ポジションのviewからデータを取得
+        holder.getEditTextView().setText(dataArray.get(position).getText());
+        holder.getEditTextView().addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //変更された時のみ実行するため、変更されたことを知らせる
+                checked = true;
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+                if (checked){
+                    checked = false;
+                    dataArray.get(position).setText(String.valueOf(holder.getEditTextView().getText()));
+                }
+            }
+        });
+        holder.getCheckBoxView().setChecked(dataArray.get(position).getboolean());
+        holder.getCheckBoxView().setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                dataArray.get(position).setBool(isChecked);
+            }
+        });
+
+
+        holder.itemView.setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                if (listener != null) {
+                    //長押しされたら他クラスで実装されたメソッドを呼び出す→リスナーを他クラスに共有できる
+                    //呼び出されたメソッド全てに値の提供
+                    listener.onItemLongClickListener(v, position);
+                }
+                return true;
+            }
+        });
+        holder.getCheckBoxView().setOnLongClickListener(new View.OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                listener.onItemLongClickListener(v, position);
+                return true;
+            }
+        });
+    }
+
+    //内容入力クラス
+    public interface OnItemLongClickListener {
+        //リスナー側呼び出しメソッド（内容は他クラス）
+        void onItemLongClickListener(View view, int position);
+    }
+
+    //他クラスで内容入力クラスを呼び出すメソッド（これがないと継承してクラス全体が箱になる？）
+    public void setOnItemLongClickListener(OnItemLongClickListener listener) {
+        //呼び出されたときこのクラスの変数に、idやpositionを設定
+        this.listener = listener;
+    }
+
+    //itemの数
+    @Override
+    public int getItemCount() {
+        return dataArray.size();
+    }
+
+
+
+    public static class TodoHolder extends RecyclerView.ViewHolder{
+        CheckBox checkBox;
+        EditText editText;
+        //viewの参照
+        public TodoHolder(@NonNull View itemView ,FragmentManager fragmentManager) {
+            super(itemView);
+            checkBox = itemView.findViewById(R.id.checkBox);
+            editText = itemView.findViewById(R.id.todo_edit);
+        }
+
+
+        public EditText getEditTextView() {
+            return editText;
+        }
+        public CheckBox getCheckBoxView() {
+            return checkBox;
+        }
+    }
+
 }
 
 
