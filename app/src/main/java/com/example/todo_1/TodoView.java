@@ -2,6 +2,7 @@ package com.example.todo_1;
 
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Canvas;
 import android.os.Bundle;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -17,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.FragmentManager;
+import androidx.recyclerview.widget.ItemTouchHelper;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -40,7 +42,6 @@ public class TodoView extends ConstraintLayout implements Cos_Dialog.DialogListe
 
     ScrollView todo_scrollView;
     Toolbar toolbar;
-    TodoViewItem todoList;
 
     String fileName;
     File json_File;
@@ -77,10 +78,36 @@ public class TodoView extends ConstraintLayout implements Cos_Dialog.DialogListe
             @Override
             public void onItemLongClickListener(View view, int position) {
                 listenerPosition = position;
-                show_Dialog(position,fragmentManager);
+                show_Dialog(fragmentManager);
             }
         });
 
+
+        ItemTouchHelper.SimpleCallback item_Swipe = new ItemTouchHelper.SimpleCallback(0, ItemTouchHelper.LEFT) {
+
+            @Override
+            public boolean onMove(@NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, @NonNull RecyclerView.ViewHolder target) {
+                //上下
+                int nowPos = viewHolder.getAdapterPosition();
+                int afPos = target.getAdapterPosition();
+                todoViewItem.notifyItemMoved(nowPos, afPos);
+                return true;
+            }
+            //左右
+            @Override
+            public void onSwiped(@NonNull RecyclerView.ViewHolder viewHolder, int direction) {
+                listenerPosition = viewHolder.getAdapterPosition();
+                show_Dialog(fragmentManager);
+                todoViewItem.notifyDataSetChanged();
+            }
+            //描写
+            @Override
+            public void onChildDraw(@NonNull Canvas c, @NonNull RecyclerView recyclerView, @NonNull RecyclerView.ViewHolder viewHolder, float dX, float dY, int actionState, boolean isCurrentlyActive) {
+                super.onChildDraw(c, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive);
+            }
+
+        };
+        new ItemTouchHelper(item_Swipe).attachToRecyclerView(recyclerView);
         //toolbarとScrollViewのスクロールを停止
         toolbar = findViewById(R.id.toolbar);
         toolbar.setOnTouchListener(new View.OnTouchListener(){
@@ -231,7 +258,7 @@ public class TodoView extends ConstraintLayout implements Cos_Dialog.DialogListe
         index--;
     }
 
-    public void show_Dialog(int position,FragmentManager fragmentManager){
+    public void show_Dialog(FragmentManager fragmentManager){
         Cos_Dialog dialogFragment = new Cos_Dialog();
         Bundle args = new Bundle();
         args.putString("CONTENT", "このアイテムを削除しますか？");

@@ -5,6 +5,7 @@ import android.app.AlertDialog;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -106,7 +107,7 @@ public class TodoViewItem extends RecyclerView.Adapter<TodoViewItem.TodoHolder> 
 
     //他クラスで内容入力クラスを呼び出すメソッド（これがないと継承してクラス全体が箱になる？）
     public void setOnItemLongClickListener(OnItemLongClickListener listener) {
-        //呼び出されたときこのクラスの変数に、idやpositionを設定
+        //渡されたインスタンスで、長押しされたときに呼び出したいメソッド（場所）を指定
         this.listener = listener;
     }
 

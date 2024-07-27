@@ -2,23 +2,23 @@ package com.example.todo_1;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.fragment.app.DialogFragment;
 
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.ContextThemeWrapper;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
 import org.json.JSONException;
 
-import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,12 +26,12 @@ public class MainActivity extends AppCompatActivity {
     ImageButton button;
     LinearLayout layout;
 
-    int index = 1;
-
-    File file;
-    File[] file_List;
     ArrayList<TodoView> todoViewArrayList = new ArrayList<>();
-    SharedPreferences index_Save;
+    ArrayList<Cos_EditText> editList = new ArrayList<>();
+    ArrayList DataSet[] = {todoViewArrayList,editList};
+
+    int index = editList.size();
+    String fileName = "MEMOdata.dat";
 
 
     @Override
@@ -42,96 +42,123 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(add_button);
         layout = findViewById(R.id.todo_);
 
+        read();
         setView();
+
     }
 
+    private void read(){
+        try {
+            FileInputStream fileIN = new FileInputStream(fileName);
+            ObjectInputStream objectIN = new ObjectInputStream(fileIN);
+            editList = (ArrayList<Cos_EditText>) objectIN.readObject();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void save(){
+        try {
+            FileOutputStream fileIN = new FileOutputStream(fileName);
+            ObjectOutputStream objectIN = new ObjectOutputStream(fileIN);
+            objectIN.writeObject(editList);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+
     private void setView(){
-        //ファイルの作成
-        index_Save = getApplicationContext().getSharedPreferences("todo_index", Context.MODE_PRIVATE);
-        int date = index_Save.getInt("view_index",0);
-        index = date;
 
         Cos_EditText cosEditText = new Cos_EditText(this,null);
-        cosEditText.setId(0);
-        layout.addView(cosEditText);
+        add_View(editList,cosEditText,0);
+
+
         Log.d("数値を取得しました", String.valueOf(index));
 
         if (index != 0){
             for (int i = 0;i < index; i++){
-                addTodoView(i,"MEMO No" + 0 + "TODO No" + i);
+                addTodoView(i);
                 Log.d("FileNameStart","MEMO No" + 0 + "TODO No" + i);
+
+                Cos_EditText add_EditText = new Cos_EditText(this,null);
+                add_View(editList,add_EditText,i+1);
             }
         }
     }
+
     @Override
     protected void onStop() {
         super.onStop();
         for (int i = 0; i < todoViewArrayList.size(); i++){
             try {
-                Log.d("保存中", String.valueOf(todoViewArrayList.get(i).getId()));
+                Log.d("保存中", String.valueOf(todoViewArrayList.get(i)));
                 todoViewArrayList.get(i).save_JsonArray();
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-            Log.d("保存が成功しました", String.valueOf(todoViewArrayList.get(i).getId()));
+            Log.d("保存が成功しました", String.valueOf(todoViewArrayList.get(i)));
 
         }
+
+        save();
     }
 
     View.OnClickListener add_button = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            addTodoView(index,"MEMO No" + 0 + "TODO No" + index);
-            index++;
-            save();
+            addTodoView(index);
         }
     };
 
+    private void addTodoView(int i){
 
-
-    private void addTodoView(int i,String fileName){
-        TodoView add_TodoView = new TodoView(this,null ,fileName,getSupportFragmentManager());
-        todoViewArrayList.add(add_TodoView);
-        add_TodoView.setId(i);
-        layout.addView(add_TodoView);
-
-
-
+        TodoView add_TodoView = new TodoView(this,null ,"MEMO No" + 0 + "TODO No" + i,getSupportFragmentManager());
+        add_View(todoViewArrayList,add_TodoView,i);
         Cos_EditText cosEditText = new Cos_EditText(this,null);
-        cosEditText.setId(i);
-        layout.addView(cosEditText);
-
+        add_View(editList,cosEditText,i + 1);
         Log.d("ファイルが追加されました", String.valueOf(i));
+
         //remove
         add_TodoView.x_button.setOnClickListener(new View.OnClickListener() {
             @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onClick(View v) {
-                add_TodoView.deleteDate(fileName);
-                remove_view(add_TodoView, cosEditText);
-                todoViewArrayList.remove(index);
+                //Todoのデータ削除
+                add_TodoView.deleteDate("MEMO No" + 0 + "TODO No" + i);
+                Log.d("ファイル削除", String.valueOf(i));
+                //Viewの削除
+                remove_view(add_TodoView, cosEditText, i);
+
+                /*
+                //idの変更
                 for (int i = add_TodoView.getId(); i < todoViewArrayList.size(); i++){
                     todoViewArrayList.get(i).setId(i);
-                    Log.d("FileName1", String.valueOf(i));
+                    editList.get(i).setId(i + 1);
+                    Log.d("アイテムが削除されidが変更されました", String.valueOf(i));
                 }
 
-                //deleteFile(file_List[add_Todo.getId()].getName());
+                 */
             }
         });
-        save();
     }
 
-    private void save(){
-        SharedPreferences.Editor editor = index_Save.edit();
-        editor.putInt("view_index",index);
-        editor.apply();
+    private void add_View(ArrayList list,View view,int index){
+        layout.addView(view);
+        list.add(index);
     }
 
-    private void remove_view (View todo,View edit){
+    private void remove_view (View todo,View edit,int index){
         layout.removeView(todo);
         layout.removeView(edit);
-        index--;
-        save();
+        todoViewArrayList.remove(index);
+        editList.remove(index + 1);
     }
 
 
