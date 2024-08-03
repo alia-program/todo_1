@@ -43,8 +43,6 @@ public class TodoView extends ConstraintLayout implements Cos_Dialog.DialogListe
     ScrollView todo_scrollView;
     Toolbar toolbar;
 
-    String fileName;
-    File json_File;
     public JSONArray jsonArray;
     List<TodoData> dataArray = new ArrayList<>();
     int index;
@@ -52,7 +50,7 @@ public class TodoView extends ConstraintLayout implements Cos_Dialog.DialogListe
     int listenerPosition;
 
 
-    public TodoView(@NonNull Context context, @Nullable AttributeSet attrs , String name, FragmentManager fragmentManager) {
+    public TodoView(@NonNull Context context, @Nullable AttributeSet attrs , String json, FragmentManager fragmentManager) {
         super(context, attrs);
         View.inflate(context,R.layout.todo_style,this);
         x_button = findViewById(com.example.todo_1.R.id.x_button);
@@ -60,10 +58,9 @@ public class TodoView extends ConstraintLayout implements Cos_Dialog.DialogListe
         add_button = findViewById(R.id.add_button);
         add_button.setOnClickListener(add_listener);
         todo_scrollView = findViewById(R.id.todo_scroll);
-        fileName = name;
         RecyclerView recyclerView = findViewById(R.id.todolist);
 
-        create_Files();
+        create_Files(json);
 
         //viewの管理（追加・削除など）(仮定)
         recyclerView.setHasFixedSize(true);
@@ -177,14 +174,12 @@ public class TodoView extends ConstraintLayout implements Cos_Dialog.DialogListe
     }
 
     //ファイルの作成
-    private void create_Files(){
+    private void create_Files(String json){
         try {
-            json_File = new File(getContext().getFilesDir(),fileName);
-            Log.d("ファイル名",fileName + ".json");
+            jsonArray = new JSONArray(json);
+            index = jsonArray.length();
 
-            if (json_File.exists()){
-                jsonArray = new JSONArray(get_JsonArray());
-                index = jsonArray.length();
+            if (0 < index){
                 Log.d("ファイル数", String.valueOf(jsonArray.length()));
                 for (int i = 0; i < index; i++){
                     try {
@@ -217,32 +212,16 @@ public class TodoView extends ConstraintLayout implements Cos_Dialog.DialogListe
                 jsonArray.put(i,add_json(dataArray.get(i).getText(),dataArray.get(i).getboolean()));
                 Log.d("Content",jsonArray.getString(i));
             }
-            //Fileにjson形式を保存
-            try (FileWriter writer = new FileWriter(json_File)) {
-                writer.write(jsonArray.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
         }else {
-            Toast.makeText(getContext() , "ファイルの欠損により保存に失敗しました。", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "ファイルの欠損により保存に失敗しました。", Toast.LENGTH_LONG).show();
             Log.d("error","Jsonファイルが破損しました");
         }
 
     }
 
-    //保存したJsonファイルを取り出す
-    private String get_JsonArray(){
-        String json_string = "";
-        try {
-            BufferedReader bufferedReader = new BufferedReader(new FileReader(json_File));
-            json_string = bufferedReader.readLine();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return json_string;
+
+    public JSONArray getJsonArray() {
+        return jsonArray;
     }
 
     public void deleteDate(String deleteFileName){

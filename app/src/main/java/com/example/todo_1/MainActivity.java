@@ -10,15 +10,16 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 
+import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity {
@@ -28,11 +29,13 @@ public class MainActivity extends AppCompatActivity {
 
     ArrayList<TodoView> todoViewArrayList = new ArrayList<>();
     ArrayList<Cos_EditText> editList = new ArrayList<>();
-    ArrayList<String> content = new ArrayList<>();
-    ArrayList DataSet[] = {todoViewArrayList,editList};
+
+    JSONArray memoArray;
+    JSONArray editJSON;
+    File json_File;
+
 
     int index;
-    File fileName = new File("MEMOdata.dat");
 
 
     @Override
@@ -48,25 +51,37 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createFile(){
-        fileName = new File(getFilesDir(), String.valueOf(fileName));
+        try {
+            json_File = new File(getFilesDir(),"memo.json");
 
-        Cos_EditText cosEditText = new Cos_EditText(this,null);
-        add_View(editList,cosEditText,0);
+            Cos_EditText cosEditText = new Cos_EditText(this,null);
+            layout.addView(cosEditText);
 
-        if (fileName.exists()){
-            read();
-            for (int i = 0;i < index; i++){
-                addTodoView(i);
-                Log.d("FileNameStart","MEMO No" + 0 + "TODO No" + i);
+            if (json_File.exists()){
+                Log.d("FileNameStart","");
+                memoArray = new JSONArray(read());
+                index = memoArray.length();
+                editJSON = new JSONArray(memoArray.getJSONArray(0));
+
+                for (int i = 0;i < index; i++){
+                    addTodoView(i);
+                    Log.d("FileNameStart","MEMO No" + 0 + "TODO No" + i);
                 }
-            for (int i = 0;i < index; i++){
-                editList.get(i).setText(content.get(i));
-                Log.d("テキストがセットされました", content.get(i));
-            }
+
+                for (int i = 0;i < index; i++){
+                    editList.get(i).setText(editJSON.getJSONObject(i).getString("MEMO_content"));
+                    Log.d("テキストがセットされました", (String) editJSON.get(i));
+                }
 
             }else {
-            content.add(0,"");
+                memoArray = new JSONArray();
+                editJSON = new JSONArray();
+                memoArray.put(0 , editJSON);
+            }
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
         }
+
     }
 
     @Override
@@ -74,17 +89,24 @@ public class MainActivity extends AppCompatActivity {
         super.onStop();
         //TodoのSave
         for (int i = 0; i < todoViewArrayList.size(); i++){
+            memoArray.put(todoViewArrayList.get(i).getJsonArray());
+        }
+
+        for (int i = 0; i < editList.size(); i++){
             try {
-                Log.d("保存中", String.valueOf(todoViewArrayList.get(i)));
-                todoViewArrayList.get(i).save_JsonArray();
+                editJSON.put(i,editList.get(i));
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
-            Log.d("保存が成功しました", String.valueOf(todoViewArrayList.get(i)));
-            Log.d("保存が成功しました", String.valueOf(index));
         }
 
-        editSave();
+        //Fileにjson形式を保存
+        try (FileWriter writer = new FileWriter(json_File)) {
+            writer.write(memoArray.toString());
+            Log.d("保存が成功しました", memoArray.toString());
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     View.OnClickListener add_button = new View.OnClickListener() {
@@ -95,35 +117,42 @@ public class MainActivity extends AppCompatActivity {
     };
 
     private void addTodoView(int i){
-        TodoView add_TodoView = new TodoView(this,null ,"MEMO No" + 0 + "TODO No" + i,getSupportFragmentManager());
-        add_View(todoViewArrayList,add_TodoView,i);
+        try {
+            JSONArray todo = new JSONArray();
+            memoArray.put(todo);
 
-        Cos_EditText cosEditText = new Cos_EditText(this,null);
-        add_View(editList,cosEditText,i + 1);
-        content.add(i + 1,"");
+            TodoView add_TodoView = new TodoView(this,null ,memoArray.getString(i+1),getSupportFragmentManager());
+            layout.addView(add_TodoView);
+            todoViewArrayList.add(add_TodoView);
 
-        Log.d("ファイルが追加されました", String.valueOf(index));
+            JSONObject content = new JSONObject();
+            content.put("MEMO_content","");
+            editJSON.put(content);
 
-        //remove
-        add_TodoView.x_button.setOnClickListener(new View.OnClickListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
-            @Override
-            public void onClick(View v) {
-                //Todoのデータ削除
-                add_TodoView.deleteDate("MEMO No" + 0 + "TODO No" + i);
-                Log.d("ファイル削除", String.valueOf(i));
-                //Viewの削除
-                remove_view(add_TodoView, cosEditText, i);
+            Cos_EditText cosEditText = new Cos_EditText(this,null);
+            layout.addView(cosEditText);
+            editList.add(cosEditText);
+
+            Log.d("ファイルが追加されました", String.valueOf(index));
+
+            //remove
+            add_TodoView.x_button.setOnClickListener(new View.OnClickListener() {
+                @RequiresApi(api = Build.VERSION_CODES.O)
+                @Override
+                public void onClick(View v) {
+                    //Todoのデータ削除
+                    add_TodoView.deleteDate("MEMO No" + 0 + "TODO No" + i);
+                    Log.d("ファイル削除", String.valueOf(i));
+                    //Viewの削除
+                    remove_view(add_TodoView, cosEditText, i);
 
 
 
-            }
-        });
-    }
-
-    private void add_View(ArrayList list,View view,int index){
-        layout.addView(view);
-        list.add(index,view);
+                }
+            });
+        } catch (JSONException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private void remove_view (View todo,View edit,int index){
@@ -133,42 +162,26 @@ public class MainActivity extends AppCompatActivity {
         editList.remove(index);
     }
 
-    private void editSave(){
+    private String read(){
+        String json_string = "";
         try {
-            for (int i = 0;i < editList.size();i++){
-                Log.d("editSave", String.valueOf(i + "." + editList.get(i).getText()));
-                content.set(i,String.valueOf(editList.get(i).getText()));
-                Log.d("コンテンツ保存中", String.valueOf(content.get(i)));
-            }
-            FileOutputStream fileIN = new FileOutputStream(fileName);
-            ObjectOutputStream objectIN = new ObjectOutputStream(fileIN);
-            objectIN.reset();
-            objectIN.writeObject(content);
-            objectIN.close();
-            fileIN.close();
-
+            BufferedReader bufferedReader = new BufferedReader(new FileReader(json_File));
+            json_string = bufferedReader.readLine();
         } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+        Log.d("読み込みが完了しました", json_string);
+        return json_string;
     }
 
-    private void read(){
-        try {
-            FileInputStream fileIN = new FileInputStream(fileName);
-            ObjectInputStream objectIN = new ObjectInputStream(fileIN);
-            content = (ArrayList<String>) objectIN.readObject();
-            index = content.size() - 1;
-            objectIN.close();
-            fileIN.close();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+
+
+    public void deleteDate(String deleteFileName){
+        File deleteFile = new File(getFilesDir(),deleteFileName);
+        deleteFile.delete();
+        Log.d("削除に成功しました", deleteFileName);
     }
 
 }
