@@ -30,8 +30,9 @@ public class MainActivity extends AppCompatActivity {
     ArrayList<TodoView> todoViewArrayList = new ArrayList<>();
     ArrayList<Cos_EditText> editList = new ArrayList<>();
 
-    JSONArray memoArray;
+    JSONArray todoJSON;
     JSONArray editJSON;
+    JSONArray memoArray;
     File json_File;
 
 
@@ -52,53 +53,81 @@ public class MainActivity extends AppCompatActivity {
 
     private void createFile(){
         try {
+            //Fileの呼び出し
             json_File = new File(getFilesDir(),"memo.json");
 
-            Cos_EditText cosEditText = new Cos_EditText(this,null);
-            layout.addView(cosEditText);
-
+            //jsonの作成
             if (json_File.exists()){
                 Log.d("FileNameStart","");
-                memoArray = new JSONArray(read());
-                index = memoArray.length();
-                editJSON = new JSONArray(memoArray.getJSONArray(0));
 
+                //jsonの読み込み
+                memoArray = new JSONArray(read());
+                //配列の初期化
+                editJSON = memoArray.getJSONArray(0);
+                todoJSON = memoArray.getJSONArray(1);
+                //数の確認
+                index = todoJSON.length();
+
+                Cos_EditText firstEditText = new Cos_EditText(this,null);
+
+                layout.addView(firstEditText);
+                firstEditText.setText(editJSON.getJSONObject(0).getString("content"));
+                editList.add(firstEditText);
+
+                //Todoの追加
                 for (int i = 0;i < index; i++){
-                    addTodoView(i);
+                    addTodo(i,todoJSON.getJSONArray(i));
                     Log.d("FileNameStart","MEMO No" + 0 + "TODO No" + i);
                 }
+                //EditTextの文字セット
+                for (int i = 1;i < index + 1; i++){
+                    editList.get(i).setText(editJSON.getJSONObject(i).getString("content"));
 
-                for (int i = 0;i < index; i++){
-                    editList.get(i).setText(editJSON.getJSONObject(i).getString("MEMO_content"));
-                    Log.d("テキストがセットされました", (String) editJSON.get(i));
+                    Log.d("テキストがセットされました", (String) editJSON.get(i).toString());
                 }
 
             }else {
+                //JSON配列の作成
                 memoArray = new JSONArray();
                 editJSON = new JSONArray();
+                todoJSON = new JSONArray();
+                //箱にTodoとEditの配列追加
                 memoArray.put(0 , editJSON);
+                memoArray.put(1 , todoJSON);
+                //
+                Cos_EditText firstEdit = new Cos_EditText(this,null);
+                layout.addView(firstEdit);
+                editList.add(firstEdit);
             }
+
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        //TodoのSave
+        //Todoの内容をJSONに追加
         for (int i = 0; i < todoViewArrayList.size(); i++){
-            memoArray.put(todoViewArrayList.get(i).getJsonArray());
+            todoJSON.remove(i);
+            todoJSON.put(todoViewArrayList.get(i).getJsonArray());
+            Log.d("保存:TODO", todoJSON.toString());
         }
 
+        //EditTextの内容をJSONに追加
         for (int i = 0; i < editList.size(); i++){
             try {
-                editJSON.put(i,editList.get(i));
+                JSONObject editContent = new JSONObject();
+                editContent.put("content",editList.get(i).getText());
+                editJSON.put(i,editContent);
             } catch (JSONException e) {
                 throw new RuntimeException(e);
             }
         }
+        Log.d("保存:EditText", editJSON.toString());
+
+
 
         //Fileにjson形式を保存
         try (FileWriter writer = new FileWriter(json_File)) {
@@ -109,57 +138,64 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    //Todoの追加
     View.OnClickListener add_button = new View.OnClickListener() {
         @Override
         public void onClick(View view) {
-            addTodoView(todoViewArrayList.size());
+            JSONArray todoJSONArray = new JSONArray();
+            addTodo(todoViewArrayList.size(),todoJSONArray);
         }
     };
 
-    private void addTodoView(int i){
-        try {
-            JSONArray todo = new JSONArray();
-            memoArray.put(todo);
+    //TodoViewを作成するメソッド
+    private void addTodo(int i,JSONArray todoJsonArray){
 
-            TodoView add_TodoView = new TodoView(this,null ,memoArray.getString(i+1),getSupportFragmentManager());
-            layout.addView(add_TodoView);
-            todoViewArrayList.add(add_TodoView);
+        //Viewと配列の追加
+        TodoView add_TodoView = new TodoView(this,null,todoJsonArray,getSupportFragmentManager());
+        layout.addView(add_TodoView);
+        todoViewArrayList.add(add_TodoView);
 
-            JSONObject content = new JSONObject();
-            content.put("MEMO_content","");
-            editJSON.put(content);
+        //EditTextの追加
+        Cos_EditText cosEditText = new Cos_EditText(this,null);
+        layout.addView(cosEditText);
+        editList.add(cosEditText);
 
-            Cos_EditText cosEditText = new Cos_EditText(this,null);
-            layout.addView(cosEditText);
-            editList.add(cosEditText);
+        Log.d("ファイルが追加されました", String.valueOf(todoViewArrayList.size()));
 
-            Log.d("ファイルが追加されました", String.valueOf(index));
+        //remove
+        add_TodoView.x_button.setOnClickListener(new View.OnClickListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
+            @Override
+            public void onClick(View v) {
+                Log.d("ファイル削除", String.valueOf(i));
+                //Viewの削除
+                remove_view(add_TodoView, cosEditText);
+            }
+        });
 
-            //remove
-            add_TodoView.x_button.setOnClickListener(new View.OnClickListener() {
-                @RequiresApi(api = Build.VERSION_CODES.O)
-                @Override
-                public void onClick(View v) {
-                    //Todoのデータ削除
-                    add_TodoView.deleteDate("MEMO No" + 0 + "TODO No" + i);
-                    Log.d("ファイル削除", String.valueOf(i));
-                    //Viewの削除
-                    remove_view(add_TodoView, cosEditText, i);
-
-
-
-                }
-            });
-        } catch (JSONException e) {
-            throw new RuntimeException(e);
-        }
     }
 
-    private void remove_view (View todo,View edit,int index){
+    private void remove_view (View todo,View edit){
+        int todo_index = todoViewArrayList.indexOf(todo);
+        int edit_index = editList.indexOf(edit);
+
+        String prevEditText = String.valueOf(editList.get(edit_index - 1).getText());
+        String deleteEditText = String.valueOf(editList.get(edit_index).getText());
+
+        if (deleteEditText.isEmpty()){
+
+        }else {
+            editList.get(edit_index - 1).setText(prevEditText + "\n" + deleteEditText);
+        }
+        //jsonアイテムの削除
+        todoJSON.remove(todoViewArrayList.indexOf(todo_index));
+        editJSON.remove(editList.indexOf(edit_index));
+        //View配列の削除
+        todoViewArrayList.remove(todo_index);
+        editList.remove(edit_index);
+        //Viewの削除
         layout.removeView(todo);
         layout.removeView(edit);
-        todoViewArrayList.remove(index);
-        editList.remove(index);
     }
 
     private String read(){
@@ -175,7 +211,6 @@ public class MainActivity extends AppCompatActivity {
         Log.d("読み込みが完了しました", json_string);
         return json_string;
     }
-
 
 
     public void deleteDate(String deleteFileName){
