@@ -2,6 +2,7 @@ package com.example.todo_1;
 
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.os.Build;
 import android.os.Bundle;
@@ -26,6 +27,7 @@ public class MainActivity extends AppCompatActivity {
 
     ImageButton button;
     LinearLayout layout;
+    Toolbar toolbar;
 
     ArrayList<TodoView> todoViewArrayList = new ArrayList<>();
     ArrayList<Cos_EditText> editList = new ArrayList<>();
@@ -34,6 +36,7 @@ public class MainActivity extends AppCompatActivity {
     JSONArray editJSON;
     JSONArray memoArray;
     File json_File;
+    Cos_EditText cosEditText;
 
 
     int index;
@@ -46,10 +49,12 @@ public class MainActivity extends AppCompatActivity {
         button = findViewById(R.id.imageButton2);
         button.setOnClickListener(add_button);
         layout = findViewById(R.id.todo_);
+        toolbar = findViewById(R.id.toolbar2);
+
 
         createFile();
-
     }
+
 
     private void createFile(){
         try {
@@ -68,11 +73,10 @@ public class MainActivity extends AppCompatActivity {
                 //数の確認
                 index = todoJSON.length();
 
-                Cos_EditText firstEditText = new Cos_EditText(this,null);
+                cosEditText = new Cos_EditText(this,null);
+                add_EditText();
 
-                layout.addView(firstEditText);
-                firstEditText.setText(editJSON.getJSONObject(0).getString("content"));
-                editList.add(firstEditText);
+                cosEditText.setText(editJSON.getJSONObject(0).getString("content"));
 
                 //Todoの追加
                 for (int i = 0;i < index; i++){
@@ -94,10 +98,9 @@ public class MainActivity extends AppCompatActivity {
                 //箱にTodoとEditの配列追加
                 memoArray.put(0 , editJSON);
                 memoArray.put(1 , todoJSON);
-                //
-                Cos_EditText firstEdit = new Cos_EditText(this,null);
-                layout.addView(firstEdit);
-                editList.add(firstEdit);
+                //editText
+                cosEditText = new Cos_EditText(this,null);
+                add_EditText();
             }
 
         } catch (JSONException e) {
@@ -156,9 +159,8 @@ public class MainActivity extends AppCompatActivity {
         todoViewArrayList.add(add_TodoView);
 
         //EditTextの追加
-        Cos_EditText cosEditText = new Cos_EditText(this,null);
-        layout.addView(cosEditText);
-        editList.add(cosEditText);
+        cosEditText = new Cos_EditText(this,null);
+        add_EditText();
 
         Log.d("ファイルが追加されました", String.valueOf(todoViewArrayList.size()));
 
@@ -170,6 +172,7 @@ public class MainActivity extends AppCompatActivity {
                 Log.d("ファイル削除", String.valueOf(i));
                 //Viewの削除
                 remove_view(add_TodoView, cosEditText);
+                Log.d("ファイル削除されました", memoArray.toString());
             }
         });
 
@@ -212,11 +215,15 @@ public class MainActivity extends AppCompatActivity {
         return json_string;
     }
 
+    private void add_EditText(){
+        Log.d("削除に成功しました", String.valueOf(toolbar.getHeight()));
+        layout.addView(cosEditText);
+        editList.add(cosEditText);
+    }
 
     public void deleteDate(String deleteFileName){
         File deleteFile = new File(getFilesDir(),deleteFileName);
         deleteFile.delete();
         Log.d("削除に成功しました", deleteFileName);
     }
-
 }
