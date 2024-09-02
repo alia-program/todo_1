@@ -1,15 +1,21 @@
 package com.example.todo_1;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.Context;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,6 +35,8 @@ public class MainActivity extends AppCompatActivity {
     LinearLayout layout;
     Toolbar toolbar;
 
+    ScrollView scrollView;
+
     ArrayList<TodoView> todoViewArrayList = new ArrayList<>();
     ArrayList<Cos_EditText> editList = new ArrayList<>();
 
@@ -36,7 +44,7 @@ public class MainActivity extends AppCompatActivity {
     JSONArray editJSON;
     JSONArray memoArray;
     File json_File;
-
+    InputMethodManager inputMethodManager;
 
     int index;
 
@@ -50,6 +58,9 @@ public class MainActivity extends AppCompatActivity {
         layout = findViewById(R.id.todo_);
         toolbar = findViewById(R.id.toolbar2);
 
+        scrollView = findViewById(R.id.scale);
+
+        inputMethodManager = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
 
         createFile();
     }
@@ -217,9 +228,17 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void add_EditText(Cos_EditText cosE){
-        Log.d("削除に成功しました", String.valueOf(toolbar.getHeight()));
         layout.addView(cosE);
         editList.add(cosE);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        //キーボードを隠す
+        inputMethodManager.hideSoftInputFromWindow(scrollView.getWindowToken(), InputMethodManager.HIDE_NOT_ALWAYS);
+        //背景にフォーカスを移す
+        scrollView.requestFocus();
+        return super.dispatchTouchEvent(ev);
     }
 
     public void deleteMemo(String deleteFileName){

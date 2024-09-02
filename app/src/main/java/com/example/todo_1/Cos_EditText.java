@@ -1,11 +1,15 @@
 package com.example.todo_1;
 
+import static androidx.core.content.ContextCompat.getSystemService;
+
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.MotionEvent;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 
 import androidx.annotation.NonNull;
@@ -37,6 +41,8 @@ public class Cos_EditText extends androidx.appcompat.widget.AppCompatEditText {
 
         Paint paint = new Paint();
         paint.setColor(Color.BLACK);
+
+
         for (int i = 1;i < 50; i++){
             canvas.drawLine(10, editTextSize * i +40, editWidth - 10, editTextSize * i +40, paint);
         }
