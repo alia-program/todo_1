@@ -36,7 +36,6 @@ public class MainActivity extends AppCompatActivity {
     JSONArray editJSON;
     JSONArray memoArray;
     File json_File;
-    Cos_EditText cosEditText;
 
 
     int index;
@@ -73,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
                 //数の確認
                 index = todoJSON.length();
 
-                cosEditText = new Cos_EditText(this,null);
-                add_EditText();
+                Cos_EditText cosEditText = new Cos_EditText(this,null);
+                add_EditText(cosEditText);
 
                 cosEditText.setText(editJSON.getJSONObject(0).getString("content"));
 
@@ -99,8 +98,8 @@ public class MainActivity extends AppCompatActivity {
                 memoArray.put(0 , editJSON);
                 memoArray.put(1 , todoJSON);
                 //editText
-                cosEditText = new Cos_EditText(this,null);
-                add_EditText();
+                Cos_EditText cosEditText = new Cos_EditText(this,null);
+                add_EditText(cosEditText);
             }
 
         } catch (JSONException e) {
@@ -159,8 +158,8 @@ public class MainActivity extends AppCompatActivity {
         todoViewArrayList.add(add_TodoView);
 
         //EditTextの追加
-        cosEditText = new Cos_EditText(this,null);
-        add_EditText();
+        Cos_EditText cosEditText = new Cos_EditText(this,null);
+        add_EditText(cosEditText);
 
         Log.d("ファイルが追加されました", String.valueOf(todoViewArrayList.size()));
 
@@ -182,6 +181,8 @@ public class MainActivity extends AppCompatActivity {
         int todo_index = todoViewArrayList.indexOf(todo);
         int edit_index = editList.indexOf(edit);
 
+        Log.d("ファイル削除されました?", String.valueOf(edit_index));
+
         String prevEditText = String.valueOf(editList.get(edit_index - 1).getText());
         String deleteEditText = String.valueOf(editList.get(edit_index).getText());
 
@@ -191,8 +192,8 @@ public class MainActivity extends AppCompatActivity {
             editList.get(edit_index - 1).setText(prevEditText + "\n" + deleteEditText);
         }
         //jsonアイテムの削除
-        todoJSON.remove(todoViewArrayList.indexOf(todo_index));
-        editJSON.remove(editList.indexOf(edit_index));
+        todoJSON.remove(todo_index);
+        editJSON.remove(edit_index);
         //View配列の削除
         todoViewArrayList.remove(todo_index);
         editList.remove(edit_index);
@@ -215,10 +216,10 @@ public class MainActivity extends AppCompatActivity {
         return json_string;
     }
 
-    private void add_EditText(){
+    private void add_EditText(Cos_EditText cosE){
         Log.d("削除に成功しました", String.valueOf(toolbar.getHeight()));
-        layout.addView(cosEditText);
-        editList.add(cosEditText);
+        layout.addView(cosE);
+        editList.add(cosE);
     }
 
     public void deleteMemo(String deleteFileName){
