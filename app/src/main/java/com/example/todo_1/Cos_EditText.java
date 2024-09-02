@@ -30,9 +30,10 @@ public class Cos_EditText extends androidx.appcompat.widget.AppCompatEditText {
     @Override
     protected void onDraw(@NonNull Canvas canvas) {
         super.onDraw(canvas);
-        this.setBackgroundColor(Color.parseColor("#00000000"));
         setTextsize(20);
         setEditText(this);
+
+        this.setBackgroundColor(Color.parseColor("#00000000"));
 
         Paint paint = new Paint();
         paint.setColor(Color.BLACK);
@@ -57,6 +58,8 @@ public class Cos_EditText extends androidx.appcompat.widget.AppCompatEditText {
 
  */
 
+    //改行したときできるようにしたい
+
 
     public void setEditText(EditText editText){
         this.editTextSize = (float) (editText.getTextSize() + 9);
@@ -64,8 +67,8 @@ public class Cos_EditText extends androidx.appcompat.widget.AppCompatEditText {
         this.editWidth = editText.getWidth();
         this.editHeight = editText.getHeight();
 
-        Log.d("margin", String.valueOf(editMargin));
-        Log.d("height", String.valueOf(editTextSize));
+        //Log.d("margin", String.valueOf(editMargin));
+        //Log.d("height", String.valueOf(editTextSize));
     }
 
     public void setTextsize (int size){

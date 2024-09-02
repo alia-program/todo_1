@@ -221,7 +221,7 @@ public class MainActivity extends AppCompatActivity {
         editList.add(cosEditText);
     }
 
-    public void deleteDate(String deleteFileName){
+    public void deleteMemo(String deleteFileName){
         File deleteFile = new File(getFilesDir(),deleteFileName);
         deleteFile.delete();
         Log.d("削除に成功しました", deleteFileName);
